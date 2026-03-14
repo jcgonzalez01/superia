@@ -501,13 +501,12 @@ async function analyzeReceipt() {
   out.innerHTML = `<div class="waiting"><div class="icon">⏳</div>Analizando factura con IA...</div>`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/proxy/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': key,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true'
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
@@ -642,13 +641,12 @@ async function doSearch() {
   out.innerHTML = `<div class="waiting"><div class="icon">⏳</div>Buscando precios de "${q}"...</div>`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/proxy/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': key,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true'
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
