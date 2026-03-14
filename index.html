@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Precios RD">
+  <meta name="description" content="Compara precios en La Sirena, Nacional, Jumbo y Bravo">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>Precios RD</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg2: #1e293b;
+      --bg3: #334155;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --accent: #38bdf8;
+      --accent2: #0ea5e9;
+      --green: #4ade80;
+      --green-bg: rgba(74,222,128,0.1);
+      --red: #f87171;
+      --red-bg: rgba(248,113,113,0.1);
+      --border: rgba(148,163,184,0.12);
+      --border2: rgba(148,163,184,0.2);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+    }
+
+    /* HEADER */
+    .header {
+      padding: calc(var(--safe-top) + 14px) 20px 14px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; }
+    .app-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .app-title span { color: var(--accent); }
+    .header-stores { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .store-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 1;
+      min-width: 70px;
+      padding: 12px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text3);
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* CONTENT */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      padding-bottom: calc(var(--safe-bottom) + 16px);
+    }
+    .panel { display: none; } .panel.active { display: block; }
+
+    /* SEARCH */
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: 0 0 12px;
+      z-index: 10;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box input::placeholder { color: var(--text3); }
+    .btn-search {
+      padding: 12px 18px;
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn-search:active { background: var(--accent2); }
+
+    /* CARDS */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .card-unit { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .best-badge {
+      font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+      background: var(--green-bg); color: var(--green); border: 1px solid rgba(74,222,128,0.2);
+      white-space: nowrap;
+    }
+
+    /* PRICE GRID */
+    .price-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .pcell {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      text-align: center;
+      transition: all .15s;
+    }
+    .pcell.best { background: var(--green-bg); border-color: rgba(74,222,128,0.3); }
+    .sname { font-size: 10px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
+    .sprice { font-size: 17px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); }
+    .pcell.best .sprice { color: var(--green); }
+    .sdiff { font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .pcell.best .sdiff { color: var(--green); }
+    .sna { font-size: 11px; color: var(--text3); }
+
+    .analysis {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(56,189,248,0.06);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* WAITING / EMPTY */
+    .waiting {
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--text3);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .waiting .icon { font-size: 36px; margin-bottom: 12px; }
+
+    /* MANUAL FORM */
+    .form-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+    .form-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-field { margin-bottom: 10px; }
+    .form-field label { font-size: 11px; color: var(--text3); display: block; margin-bottom: 4px; font-weight: 500; }
+    .form-field input {
+      width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none;
+    }
+    .form-field input:focus { border-color: var(--accent); }
+    .price-inputs { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .btn-add {
+      width: 100%; padding: 12px; background: var(--accent); color: #0f172a;
+      border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px;
+    }
+    .btn-add:active { background: var(--accent2); }
+
+    /* HISTORY */
+    .hist-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 8px;
+    }
+    .hist-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .hist-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .hist-price { font-size: 16px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); text-align: right; }
+    .hist-store { font-size: 11px; color: var(--green); text-align: right; margin-top: 2px; }
+    .trend-up { font-size: 11px; color: var(--red); font-weight: 600; }
+    .trend-down { font-size: 11px; color: var(--green); font-weight: 600; }
+
+    /* REPORT */
+    .section-label {
+      font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase;
+      letter-spacing: 0.6px; margin: 16px 0 8px;
+    }
+    .rrow {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+    }
+    .rrow:last-child { border-bottom: none; }
+    .rstore { font-size: 11px; color: var(--green); font-weight: 500; margin-top: 1px; }
+    .rprice { font-weight: 600; font-family: 'DM Mono', monospace; }
+    .total-card {
+      background: var(--green-bg); border: 1px solid rgba(74,222,128,0.25);
+      border-radius: var(--radius); padding: 16px; margin-top: 12px; text-align: center;
+    }
+    .total-label { font-size: 12px; color: var(--green); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .total-amount { font-size: 32px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--green); margin: 4px 0; }
+    .total-saving { font-size: 13px; color: var(--text2); }
+
+    .btn-clear {
+      width: 100%; padding: 11px; background: transparent; color: var(--red);
+      border: 1px solid var(--red-bg); border-radius: var(--radius); font-size: 14px;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 12px;
+    }
+
+    /* SCAN */
+    .scan-drop {
+      border: 2px dashed var(--border2); border-radius: var(--radius);
+      padding: 32px 20px; text-align: center; cursor: pointer; margin-bottom: 14px;
+      transition: border-color .2s; background: var(--bg2);
+    }
+    .scan-drop:active { border-color: var(--accent); }
+    .scan-drop .icon { font-size: 40px; margin-bottom: 10px; }
+    .scan-drop .label { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .scan-drop .hint { font-size: 12px; color: var(--text3); }
+    #scan-preview { width: 100%; border-radius: var(--radius); margin-bottom: 14px; display: none; max-height: 260px; object-fit: contain; background: var(--bg3); }
+    .btn-analyze {
+      width: 100%; padding: 13px; background: var(--accent); color: #0f172a;
+      border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; margin-bottom: 14px; display: none;
+    }
+    .btn-analyze:active { background: var(--accent2); }
+    .scan-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); margin-bottom: 6px;
+    }
+    .scan-item-name { font-size: 14px; color: var(--text); }
+    .scan-item-right { text-align: right; }
+    .scan-item-price { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--accent); }
+    .scan-item-qty { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .scan-summary { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+    .scan-summary-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .scan-total { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 6px; border-top: 1px solid var(--border); }
+    .scan-total-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .scan-total-amount { font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--green); }
+    .btn-save-scan { width: 100%; padding: 12px; background: var(--bg3); color: var(--text); border: 1px solid var(--border2); border-radius: var(--radius); font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+    .btn-save-scan:active { background: var(--border2); }
+    .store-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: rgba(56,189,248,0.1); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); margin-bottom: 10px; }
+
+    /* INSTALL PROMPT */
+    #install-banner {
+      display: none; position: fixed; bottom: calc(var(--safe-bottom) + 16px);
+      left: 16px; right: 16px; background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius); padding: 14px 16px; z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .install-text { font-size: 14px; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
+    .install-btns { display: flex; gap: 8px; }
+    .btn-install { flex: 1; padding: 10px; background: var(--accent); color: #0f172a; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+    .btn-dismiss { padding: 10px 14px; background: transparent; color: var(--text3); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+
+    /* API KEY MODAL */
+    #api-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 200; align-items: center; justify-content: center; padding: 20px;
+    }
+    #api-modal.show { display: flex; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 380px; }
+    .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .modal-desc { font-size: 13px; color: var(--text2); margin-bottom: 14px; line-height: 1.6; }
+    .modal-input { width: 100%; padding: 12px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; font-family: 'DM Mono', monospace; outline: none; margin-bottom: 10px; }
+    .modal-input:focus { border-color: var(--accent); }
+    .btn-save-key { width: 100%; padding: 12px; background: var(--accent); color: #0f172a; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+    .key-hint { font-size: 11px; color: var(--text3); margin-top: 8px; line-height: 1.5; }
+    .key-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); cursor: pointer; }
+    .key-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
+    .key-dot.active { background: var(--green); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="app-title">Precios<span>RD</span></div>
+    <div class="key-status" onclick="showApiModal()">
+      <div class="key-dot" id="key-dot"></div>
+      <span id="key-label">API Key</span>
+    </div>
+  </div>
+  <div class="header-stores">
+    <span class="store-pill">La Sirena</span>
+    <span class="store-pill">Nacional</span>
+    <span class="store-pill">Jumbo</span>
+    <span class="store-pill">Bravo</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('search')">Buscar</div>
+  <div class="tab" onclick="switchTab('scan')">📷 Factura</div>
+  <div class="tab" onclick="switchTab('manual')">Manual</div>
+  <div class="tab" onclick="switchTab('history')">Historial</div>
+  <div class="tab" onclick="switchTab('report')">Lista</div>
+</div>
+
+<div class="content">
+
+  <!-- SEARCH -->
+  <div id="panel-search" class="panel active">
+    <div class="search-box">
+      <input type="text" id="q" placeholder="Arroz, aceite Mazola, leche..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="btn-search" onclick="doSearch()">Buscar</button>
+    </div>
+    <div id="search-out">
+      <div class="waiting">
+        <div class="icon">🛒</div>
+        Busca un producto para comparar precios en los 4 supermercados
+      </div>
+    </div>
+  </div>
+
+  <!-- SCAN FACTURA -->
+  <div id="panel-scan" class="panel">
+    <input type="file" id="scan-input" accept="image/*" capture="environment" style="display:none" onchange="onScanFile(this)">
+    <div class="scan-drop" onclick="document.getElementById('scan-input').click()">
+      <div class="icon">📷</div>
+      <div class="label">Tomar foto / subir factura</div>
+      <div class="hint">Toca para abrir la cámara o seleccionar imagen</div>
+    </div>
+    <img id="scan-preview" alt="Factura">
+    <button class="btn-analyze" id="btn-analyze" onclick="analyzeReceipt()">Analizar factura con IA</button>
+    <div id="scan-out"></div>
+  </div>
+
+  <!-- MANUAL -->
+  <div id="panel-manual" class="panel">
+    <div class="form-section">
+      <div class="form-title">Agregar producto</div>
+      <div class="form-field">
+        <label>Nombre del producto</label>
+        <input type="text" id="mp" placeholder="Ej: Aceite Mazola 1L">
+      </div>
+      <div class="form-field">
+        <label>Presentación / unidad</label>
+        <input type="text" id="mu" placeholder="Ej: 1 litro, 5 libras...">
+      </div>
+      <div class="form-field">
+        <label>Precios (RD$)</label>
+        <div class="price-inputs">
+          <div>
+            <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">La Sirena</label>
+            <input type="number" id="ms" placeholder="0.00">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">Nacional</label>
+            <input type="number" id="mn" placeholder="0.00">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">Jumbo</label>
+            <input type="number" id="mj" placeholder="0.00">
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">Bravo</label>
+            <input type="number" id="mb" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addManual()">Agregar producto</button>
+    </div>
+    <div id="manual-out"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="panel-history" class="panel">
+    <div id="history-out"></div>
+  </div>
+
+  <!-- REPORT -->
+  <div id="panel-report" class="panel">
+    <div id="report-out"></div>
+  </div>
+
+</div>
+
+<!-- API KEY MODAL -->
+<div id="api-modal">
+  <div class="modal-box">
+    <div class="modal-title">API Key de Anthropic</div>
+    <div class="modal-desc">Para buscar precios con IA necesitas una API key de Anthropic. Se guarda solo en tu dispositivo.</div>
+    <input type="password" class="modal-input" id="api-key-input" placeholder="sk-ant-...">
+    <button class="btn-save-key" onclick="saveApiKey()">Guardar API Key</button>
+    <div class="key-hint">Obtén tu API key en <strong>console.anthropic.com</strong> → API Keys. La entrada manual funciona sin API key.</div>
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="install-text">📲 Instala PreciosRD en tu pantalla de inicio para acceso rápido sin navegador.</div>
+  <div class="install-btns">
+    <button class="btn-install" id="btn-install-pwa">Instalar app</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">Ahora no</button>
+  </div>
+</div>
+
+<script>
+const STORES = ['La Sirena','Nacional','Jumbo','Bravo'];
+let products = [];
+let deferredPrompt = null;
+
+try { products = JSON.parse(localStorage.getItem('preciosrd_v1') || '[]'); } catch(e){}
+function save() { try { localStorage.setItem('preciosrd_v1', JSON.stringify(products)); } catch(e){} }
+function fmt(n) { return Number(n).toLocaleString('es-DO', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function getKey() { return localStorage.getItem('anthropic_key') || ''; }
+
+// API Key UI
+function updateKeyStatus() {
+  const k = getKey();
+  document.getElementById('key-dot').className = 'key-dot' + (k ? ' active' : '');
+  document.getElementById('key-label').textContent = k ? 'API ✓' : 'API Key';
+}
+function showApiModal() { document.getElementById('api-modal').classList.add('show'); document.getElementById('api-key-input').value = getKey(); }
+function saveApiKey() {
+  const v = document.getElementById('api-key-input').value.trim();
+  if(v) localStorage.setItem('anthropic_key', v); else localStorage.removeItem('anthropic_key');
+  document.getElementById('api-modal').classList.remove('show');
+  updateKeyStatus();
+}
+document.getElementById('api-modal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('show'); });
+updateKeyStatus();
+
+// TABS
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['search','scan','manual','history','report'][i]===t));
+  document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='history') renderHistory();
+  if(t==='report') renderReport();
+  if(t==='manual') renderManual();
+}
+
+// SCAN
+let scanImageBase64 = null;
+
+function onScanFile(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    scanImageBase64 = dataUrl.split(',')[1];
+    const preview = document.getElementById('scan-preview');
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    document.getElementById('btn-analyze').style.display = 'block';
+    document.getElementById('scan-out').innerHTML = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeReceipt() {
+  if(!scanImageBase64) return;
+  const key = getKey();
+  if(!key) { showApiModal(); return; }
+
+  const out = document.getElementById('scan-out');
+  document.getElementById('btn-analyze').disabled = true;
+  out.innerHTML = `<div class="waiting"><div class="icon">⏳</div>Analizando factura con IA...</div>`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/jpeg', data: scanImageBase64 }
+            },
+            {
+              type: 'text',
+              text: `Analiza esta factura/ticket de supermercado de República Dominicana.
+Extrae: nombre del supermercado, todos los productos con sus precios y cantidades.
+Responde ÚNICAMENTE con JSON sin texto adicional:
+{
+  "store": "nombre del supermercado o Desconocido",
+  "date": "fecha si aparece o null",
+  "items": [
+    {"name": "nombre producto", "qty": cantidad_numero, "unit_price": precio_unitario, "total": precio_total}
+  ],
+  "subtotal": numero_o_null,
+  "itbis": numero_o_null,
+  "total": total_factura
+}`
+            }
+          ]
+        }]
+      })
+    });
+    if(!resp.ok) throw new Error(`Error ${resp.status}`);
+    const data = await resp.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const i = raw.indexOf('{'), j = raw.lastIndexOf('}');
+    const parsed = JSON.parse(raw.slice(i, j+1));
+    renderScanResults(parsed);
+  } catch(e) {
+    out.innerHTML = `<div class="waiting" style="color:var(--red)"><div class="icon">⚠️</div>${e.message}</div>`;
+  }
+  document.getElementById('btn-analyze').disabled = false;
+}
+
+function renderScanResults(data) {
+  const out = document.getElementById('scan-out');
+  const items = data.items || [];
+  const total = data.total || items.reduce((s,i)=>s+(i.total||0),0);
+
+  const itemsHtml = items.map(item => `
+    <div class="scan-item">
+      <div class="scan-item-name">${item.name}</div>
+      <div class="scan-item-right">
+        <div class="scan-item-price">RD$ ${fmt(item.total || item.unit_price)}</div>
+        ${item.qty > 1 ? `<div class="scan-item-qty">${item.qty} × RD$ ${fmt(item.unit_price)}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  out.innerHTML = `
+    <div class="scan-summary">
+      <div class="scan-summary-title">Factura analizada</div>
+      ${data.store ? `<div class="store-tag">${data.store}</div>` : ''}
+      ${data.date ? `<div style="font-size:12px;color:var(--text3);margin-bottom:10px">${data.date}</div>` : ''}
+      ${itemsHtml}
+      ${data.itbis ? `<div class="rrow" style="padding:8px 0"><span style="color:var(--text3)">ITBIS (18%)</span><span class="rprice">RD$ ${fmt(data.itbis)}</span></div>` : ''}
+      <div class="scan-total">
+        <span class="scan-total-label">Total</span>
+        <span class="scan-total-amount">RD$ ${fmt(total)}</span>
+      </div>
+    </div>
+    <button class="btn-save-scan" onclick="saveScanToHistory(${JSON.stringify(data).replace(/"/g,'&quot;')})">
+      Guardar productos en historial
+    </button>`;
+}
+
+function saveScanToHistory(data) {
+  const items = data.items || [];
+  const store = data.store || null;
+  let added = 0;
+  items.forEach(item => {
+    if(!item.name || !item.unit_price) return;
+    const existing = products.findIndex(p=>p.product.toLowerCase()===item.name.toLowerCase());
+    const prices = {'La Sirena':null,'Nacional':null,'Jumbo':null,'Bravo':null};
+    if(store && STORES.includes(store)) prices[store] = item.unit_price;
+    const entry = {
+      product: item.name, unit: item.qty > 1 ? `×${item.qty}` : '',
+      prices, analysis: store ? `Precio registrado en ${store}` : '',
+      date: new Date().toLocaleDateString('es-DO'), timestamp: Date.now(), manual: true
+    };
+    if(existing>=0){ entry.prevPrices=products[existing].prices; products[existing]=entry; }
+    else { products.push(entry); added++; }
+  });
+  save();
+  document.getElementById('scan-out').innerHTML += `<div class="waiting" style="color:var(--green)"><div class="icon">✅</div>${added} productos guardados en historial</div>`;
+}
+
+// CARD
+function buildCard(p) {
+  const vals = STORES.map(s=>({s,v:p.prices[s]})).filter(x=>x.v!=null&&x.v>0);
+  const minV = vals.length ? Math.min(...vals.map(x=>x.v)) : null;
+  const maxV = vals.length ? Math.max(...vals.map(x=>x.v)) : null;
+  const bestS = minV!=null ? vals.find(x=>x.v===minV)?.s : null;
+  const cells = STORES.map(s=>{
+    const v = p.prices[s];
+    const isBest = v!=null && v===minV && minV!==maxV;
+    const diff = (v!=null && v>0 && minV && v>minV) ? `+RD$ ${fmt(v-minV)}` : isBest ? 'Más barato' : '';
+    return `<div class="pcell ${isBest?'best':''}">
+      <div class="sname">${s}</div>
+      ${v!=null&&v>0 ? `<div class="sprice">RD$ ${fmt(v)}</div><div class="sdiff">${diff}</div>` : '<div class="sna">—</div>'}
+    </div>`;
+  }).join('');
+  return `<div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">${p.product}</div>
+        ${p.unit?`<div class="card-unit">${p.unit}</div>`:''}
+      </div>
+      ${bestS?`<span class="best-badge">${bestS}</span>`:''}
+    </div>
+    <div class="price-grid">${cells}</div>
+    ${p.analysis?`<div class="analysis">${p.analysis}</div>`:''}
+  </div>`;
+}
+
+// SEARCH
+async function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  const key = getKey();
+  if(!key) { showApiModal(); return; }
+
+  const out = document.getElementById('search-out');
+  out.innerHTML = `<div class="waiting"><div class="icon">⏳</div>Buscando precios de "${q}"...</div>`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: `Eres experto en precios de supermercados de República Dominicana. Producto: "${q}".
+Proporciona precios estimados en RD$ para La Sirena, Nacional, Jumbo y Bravo.
+Responde ÚNICAMENTE con JSON, sin texto adicional:
+{"product":"nombre","unit":"presentación","prices":{"La Sirena":numero,"Nacional":numero,"Jumbo":numero,"Bravo":numero},"analysis":"1-2 oraciones cuál conviene"}`
+        }]
+      })
+    });
+    if(!resp.ok) throw new Error(`Error ${resp.status}`);
+    const data = await resp.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const i = raw.indexOf('{'), j = raw.lastIndexOf('}');
+    const parsed = JSON.parse(raw.slice(i, j+1));
+    const existing = products.findIndex(p=>p.product.toLowerCase()===parsed.product.toLowerCase());
+    const entry = {...parsed, date:new Date().toLocaleDateString('es-DO'), timestamp:Date.now()};
+    if(existing>=0){ entry.prevPrices=products[existing].prices; products[existing]=entry; }
+    else products.push(entry);
+    save();
+    out.innerHTML = buildCard(parsed);
+  } catch(e) {
+    out.innerHTML = `<div class="waiting" style="color:var(--red)"><div class="icon">⚠️</div>${e.message}</div>`;
+  }
+}
+
+// Enter key
+document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+// MANUAL
+function addManual() {
+  const product = document.getElementById('mp').value.trim();
+  if(!product) return;
+  const entry = {
+    product, unit: document.getElementById('mu').value.trim(),
+    prices: {
+      'La Sirena': parseFloat(document.getElementById('ms').value)||null,
+      'Nacional':  parseFloat(document.getElementById('mn').value)||null,
+      'Jumbo':     parseFloat(document.getElementById('mj').value)||null,
+      'Bravo':     parseFloat(document.getElementById('mb').value)||null
+    },
+    analysis:'', date:new Date().toLocaleDateString('es-DO'), timestamp:Date.now(), manual:true
+  };
+  const existing = products.findIndex(p=>p.product.toLowerCase()===product.toLowerCase());
+  if(existing>=0){ entry.prevPrices=products[existing].prices; products[existing]=entry; }
+  else products.push(entry);
+  save();
+  ['mp','mu','ms','mn','mj','mb'].forEach(id=>document.getElementById(id).value='');
+  renderManual();
+}
+
+function renderManual() {
+  const el = document.getElementById('manual-out');
+  const m = products.filter(p=>p.manual);
+  el.innerHTML = m.length ? m.map(buildCard).join('') : '<div class="waiting"><div class="icon">✏️</div>Agrega productos con el formulario de arriba</div>';
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-out');
+  if(!products.length){ el.innerHTML='<div class="waiting"><div class="icon">📋</div>El historial está vacío</div>'; return; }
+  el.innerHTML = [...products].sort((a,b)=>b.timestamp-a.timestamp).map(p=>{
+    const vals = STORES.map(s=>p.prices[s]).filter(v=>v!=null&&v>0);
+    const minV = vals.length?Math.min(...vals):null;
+    const bestS = minV?STORES.find(s=>p.prices[s]===minV):null;
+    let trend = '';
+    if(p.prevPrices){
+      const pv=STORES.map(s=>p.prevPrices[s]).filter(v=>v!=null&&v>0);
+      const pm=pv.length?Math.min(...pv):null;
+      if(pm&&minV){ const d=minV-pm; if(d>1) trend=`<div class="trend-up">↑ RD$ ${fmt(d)}</div>`; else if(d<-1) trend=`<div class="trend-down">↓ RD$ ${fmt(Math.abs(d))}</div>`; }
+    }
+    return `<div class="hist-item">
+      <div>
+        <div class="hist-name">${p.product}</div>
+        <div class="hist-meta">${p.date}${p.unit?' · '+p.unit:''}${p.manual?' · manual':''}</div>
+      </div>
+      <div>
+        ${minV?`<div class="hist-price">RD$ ${fmt(minV)}</div>`:''}
+        <div class="hist-store">${bestS||''}</div>
+        ${trend}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderReport() {
+  const el = document.getElementById('report-out');
+  if(!products.length){ el.innerHTML='<div class="waiting"><div class="icon">📊</div>Busca productos primero para generar la lista</div>'; return; }
+  const byStore={}; STORES.forEach(s=>byStore[s]={items:[],total:0});
+  const rows = products.map(p=>{
+    const opts=STORES.map(s=>({s,v:p.prices[s]})).filter(x=>x.v!=null&&x.v>0).sort((a,b)=>a.v-b.v);
+    const best=opts[0];
+    if(best){ byStore[best.s].items.push(p.product); byStore[best.s].total+=best.v; }
+    return {product:p.product, unit:p.unit, store:best?.s, price:best?.v};
+  });
+  const grand=rows.reduce((s,r)=>s+(r.price||0),0);
+  const worst=products.reduce((s,p)=>{ const vv=STORES.map(st=>p.prices[st]).filter(v=>v!=null&&v>0); return s+(vv.length?Math.max(...vv):0); },0);
+  const saved=worst-grand;
+  el.innerHTML=`
+    <div class="section-label">Compra cada artículo donde es más barato</div>
+    <div class="card" style="padding:4px 14px">
+      ${rows.map(r=>`<div class="rrow">
+        <div>
+          <div>${r.product}</div>
+          <div class="rstore">${r.store||''}</div>
+        </div>
+        <div class="rprice">${r.price?`RD$ ${fmt(r.price)}`:''}</div>
+      </div>`).join('')}
+    </div>
+    <div class="section-label">Por supermercado</div>
+    ${STORES.filter(s=>byStore[s].items.length).map(s=>`
+      <div class="card" style="padding:10px 14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600">${s}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${byStore[s].items.join(', ')}</div>
+          </div>
+          <div class="rprice">RD$ ${fmt(byStore[s].total)}</div>
+        </div>
+      </div>`).join('')}
+    <div class="total-card">
+      <div class="total-label">Total optimizado</div>
+      <div class="total-amount">RD$ ${fmt(grand)}</div>
+      ${saved>0?`<div class="total-saving">Ahorras RD$ ${fmt(saved)} vs comprar todo en el más caro</div>`:''}
+    </div>
+    <button class="btn-clear" onclick="clearAll()">Limpiar lista</button>`;
+}
+
+function clearAll() {
+  if(confirm('¿Borrar todos los productos guardados?')){
+    products=[]; save(); renderHistory(); renderReport(); renderManual();
+    document.getElementById('search-out').innerHTML='<div class="waiting"><div class="icon">🛒</div>Busca un producto para comparar precios</div>';
+  }
+}
+
+// PWA Install
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  if(!localStorage.getItem('install_dismissed')) document.getElementById('install-banner').style.display='block';
+});
+document.getElementById('btn-install-pwa').addEventListener('click', async () => {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome} = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').style.display='none';
+});
+function dismissInstall() {
+  localStorage.setItem('install_dismissed','1');
+  document.getElementById('install-banner').style.display='none';
+}
+
+// Service Worker
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
